@@ -18,9 +18,4 @@ class App : Application() {
                 Log.d("App", "FCM TOKEN:  $token")
             }
     }
-
 }
-
-
-
-

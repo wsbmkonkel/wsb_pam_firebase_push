@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:560610582670:android:65f2af6af7100d33c2e9df",
+        "mobilesdk_app_id": "1:560610582670:android:1d282e1eacd8c8c8c2e9df",
         "android_client_info": {
-          "package_name": "pl.wsbmkonkel.wsb.firebasepush"
+          "package_name": "pl.wsbmkonkel.wsb.firebasepush.test"
         }
       },
       "oauth_client": [
