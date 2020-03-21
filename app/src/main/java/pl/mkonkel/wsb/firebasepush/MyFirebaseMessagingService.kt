@@ -1,34 +1,86 @@
 package pl.mkonkel.wsb.firebasepush
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.util.Log
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 
-// TODO: Implement your custom Messaging service.
-//class MyFirebaseMessagingService : FirebaseMessagingService() {
 
-//    TODO: Create the NotificationManager here
+class MyFirebaseMessagingService : FirebaseMessagingService() {
+    private val notificationManager: NotificationManager by lazy {
+        applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    }
 
-//    TODO: Override the "onMessageReceived" where we will be handling the PUSH message
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
 
-//    TODO: Add a helper method for creating the Notification Channel
-//    You will need to provide:
-//    - Channel Id
-//    - Channel Name
-//    - Channel Importance
-//
-//    You can also add some extra configuration like "lights", "vibration" etc...
-//    Remember to register created channel in the notificationManager
+        val title = remoteMessage.notification?.title ?: "empty title"
+        val message = remoteMessage.notification?.body ?: "empty message"
 
-//    TODO: Add a helper method for building the received notification
-//    You need to use "NotificationCompat.Builder", and provide some basic configuration like:
-//    - Small Icon
-//    - Content Title
-//    - Content Text
-//    - etc...
+        Log.d("MESSAGE", "title: $title / message: $message ")
 
-//    TODO: Add a helper method for creating the Pending Intent that will allow us to run some activity
-//    If you want to pass the notification to the Activity you must use the Extras
+        createNotificationChannel()
 
-//    companion object {
-//        const val NOTIFICATION_MESSAGE_TITLE = "message_title"
-//        const val NOTIFICATION_MESSAGE_BODY = "message_body"
-//    }
-//}
+        val pendingIntent = createPendingIntent(title, message)
+        val notification = buildNotification(title, pendingIntent)
+
+        notificationManager.notify(1, notification)
+    }
+
+    private fun createNotificationChannel() {
+        val notificationChannel = NotificationChannel(
+            CHANNEL_ID,
+            "Default notification channel",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+
+        notificationChannel.enableLights(true)
+        notificationChannel.enableVibration(true)
+        notificationChannel.vibrationPattern = longArrayOf(100, 200, 300, 500, 100, 200)
+        notificationChannel.lightColor = Color.BLUE
+        notificationChannel.description = "Default notification channel for our Test Application"
+
+        // register channel
+        notificationManager.createNotificationChannel(notificationChannel)
+    }
+
+
+    private fun buildNotification(notificationTitle: String, pendingIntent: PendingIntent): Notification {
+        return Notification.Builder(applicationContext, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_add_alert_black_24dp)
+            .setContentTitle("UWAGA!")
+            .setContentText(notificationTitle)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+    }
+
+
+    private fun createPendingIntent(title: String?, message: String?): PendingIntent {
+        val resultIntent = Intent(this, DetailActivity::class.java)
+
+        resultIntent.putExtra(NOTIFICATION_MESSAGE_TITLE, title)
+        resultIntent.putExtra(NOTIFICATION_MESSAGE_BODY, message)
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
+        return PendingIntent.getActivity(
+            this,
+            1,
+            resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    companion object {
+        const val NOTIFICATION_MESSAGE_TITLE = "message_title"
+        const val NOTIFICATION_MESSAGE_BODY = "message_body"
+
+        const val CHANNEL_ID = "12345678"
+    }
+}
